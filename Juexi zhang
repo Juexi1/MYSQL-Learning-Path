@@ -1,0 +1,142 @@
+create database November_DPD_116205;
+USE November_DPD_116205;
+CREATE TABLE DPD_Novmeber_Cost(
+Date TEXT, 	
+Consignment	TEXT,
+Product_Code INTEGER,
+Product_Description TEXT,
+Service_Code INTEGER,
+Service_Description TEXT,
+Depot_No INTEGER,
+Collection TEXT,
+Delivery TEXT,
+Senders_Ref	TEXT,
+Weight INTEGER,
+Items INTEGER,	
+VAT_Code TEXT,
+Revenue FLOAT,
+Surcharge TEXT,
+Fuel_and_Energy_Charge FLOAT,
+Third_Party_Collection FLOAT,
+Congestion_Charge FLOAT,
+Contractual_Liability FLOAT,
+Carriage_Charge	FLOAT,
+Country_Code TEXT,
+Country TEXT,
+Delivery_Address TEXT,
+Collection_Post_Code TEXT,
+Total_Cost FLOAT);
+LOAD DATA local infile "D:\DPD_November.csv"
+into table DPD_Novmeber_Cost
+FIELDS TERMINATED BY ','
+ENCLOSED BY '"'
+IGNORE 1 ROWS;
+UPDATE `DPD_Novmeber_Cost` SET `date` = STR_TO_DATE(`Date`, '%d/%m/%Y');
+SET SQL_SAFE_UPDATES=0;
+SET GLOBAL local_infile=1;
+DROP TABLE DPD_Novmeber_Cost;
+--- Table1 ---
+
+UPDATE `DPD_Novmeber_Cost` SET Total_Cost = Revenue + Surcharge + Fuel_and_Energy_Charge + Third_Party_Collection + Congestion_Charge + Contractual_Liability + Carriage_Charge;
+SELECT
+Service_Description,
+count(Consignment) as total_consignment,
+count(Product_Description) as total_product,
+count(Depot_No) as total_depot,
+count(Collection) as total_collection
+FROM DPD_Novmeber_Cost
+GROUP BY Service_Description;
+--- Qty ---
+
+SELECT
+MIN(Total_Cost)
+FROM DPD_Novmeber_Cost;
+--- Caculation --- 
+
+SELECT
+Date,
+sum(Revenue),
+round(sum(Fuel_and_Energy_Charge),1) As Total_Fuel_and_Energy_Charge,
+round(sum(Third_Party_Collection),1) As Total_Third_Party_Collection,
+round(sum(Congestion_Charge),1) As Total_Congestion_Charge,
+round(sum(Contractual_Liability),1) As Total_Contractual_Liability,
+round(sum(Carriage_Charge),1) As Total_Carriage_Charge,
+Round(sum(Total_Cost),1) As Total_Cost
+FROM DPD_Novmeber_Cost
+-- WHERE Congestion_Charge > 0  -- 
+GROUP BY Date
+HAVING Total_Cost > 200
+ORDER BY Total_Cost DESC;
+--- Cost ---
+
+SELECT 
+Date,
+ROUND(avg(length(Senders_Ref)),2)
+FROM DPD_Novmeber_Cost
+GROUP BY Date;
+--- Length ---
+
+CREATE TABLE DPD_Novmeber_Cost2(
+Date TEXT, 	
+Consignment	TEXT,
+Product_Code INTEGER,
+Product_Description TEXT,
+Service_Code INTEGER,
+Service_Description TEXT,
+Depot_No INTEGER,
+Collection TEXT,
+Delivery TEXT,
+Senders_Ref	TEXT,
+Weight INTEGER,
+Items INTEGER,	
+VAT_Code TEXT,
+Revenue FLOAT,
+Surcharge TEXT,
+Fuel_and_Energy_Charge FLOAT,
+Third_Party_Collection FLOAT,
+Congestion_Charge FLOAT,
+Contractual_Liability FLOAT,
+Carriage_Charge	FLOAT,
+Country_Code TEXT,
+Country TEXT,
+Delivery_Address TEXT,
+Collection_Post_Code TEXT,
+Total_Cost FLOAT);
+LOAD DATA local infile "D:\DPD_November2.csv"
+into table DPD_Novmeber_Cost2
+FIELDS TERMINATED BY ','
+ENCLOSED BY '"'
+IGNORE 1 ROWS;
+UPDATE `DPD_Novmeber_Cost2` SET Total_Cost = Revenue + Surcharge + Fuel_and_Energy_Charge + Third_Party_Collection + Congestion_Charge + Contractual_Liability + Carriage_Charge;
+UPDATE `DPD_Novmeber_Cost2` SET `date` = STR_TO_DATE(`Date`, '%d/%m/%Y');
+--- Table2 ---
+
+CREATE TABLE DPD_Novmeber_Cost3(
+Date TEXT, 	
+Consignment	TEXT,
+Product_Code INTEGER,
+Product_Description TEXT,
+Service_Code INTEGER,
+Service_Description TEXT,
+Depot_No INTEGER,
+Collection TEXT,
+Delivery TEXT,
+Senders_Ref	TEXT,
+Weight INTEGER,
+Items INTEGER,	
+VAT_Code TEXT,
+Revenue FLOAT,
+Surcharge TEXT,
+Fuel_and_Energy_Charge FLOAT,
+Third_Party_Collection FLOAT,
+Congestion_Charge FLOAT,
+Contractual_Liability FLOAT,
+Carriage_Charge	FLOAT,
+Country_Code TEXT,
+Country TEXT,
+Delivery_Address TEXT,
+Collection_Post_Code TEXT,
+Total_Cost FLOAT);
+insert into DPD_Novmeber_Cost3 select * from DPD_Novmeber_Cost;
+insert into DPD_Novmeber_Cost3 select * from DPD_Novmeber_Cost2;
+--- Insert_Table_as_MYSQL_doesn't_have_Full_Join_Function ---
